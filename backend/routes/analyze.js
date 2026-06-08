@@ -4,7 +4,6 @@ const multer = require('multer');
 const pdfParse = require('pdf-parse');
 const fs = require('fs');
 const Groq = require('groq-sdk');
-const Analysis = require('../models/Analysis');
 
 const upload = multer({ dest: 'uploads/' });
 const groq = new Groq({ apiKey: process.env.GROQ_API_KEY });
@@ -84,44 +83,17 @@ router.post('/', upload.single('resume'), async (req, res) => {
       return res.status(500).json({ error: 'AI returned invalid format. Try again.' });
     }
 
-    // Try to save to MongoDB, but return result even if it fails
-    try {
-      const saved = await Analysis.create({
-        resumeText,
-        jobDescription,
-        matchScore: analysis.matchScore,
-        summary: analysis.summary,
-        strengths: analysis.strengths,
-        missing: analysis.missing,
-        improved_bullet: analysis.improved_bullet
-      });
-      return res.status(201).json(saved);
-    } catch (dbError) {
-      console.error('DB save failed, returning result anyway:', dbError.message);
-      return res.status(201).json({
-        matchScore: analysis.matchScore,
-        summary: analysis.summary,
-        strengths: analysis.strengths,
-        missing: analysis.missing,
-        improved_bullet: analysis.improved_bullet
-      });
-    }
+    // Return result
+    res.status(201).json({
+      matchScore: analysis.matchScore,
+      summary: analysis.summary,
+      strengths: analysis.strengths,
+      missing: analysis.missing,
+      improved_bullet: analysis.improved_bullet
+    });
 
   } catch (err) {
     console.error(err);
-    res.status(500).json({ error: err.message });
-  }
-});
-
-// GET history
-router.get('/history', async (req, res) => {
-  try {
-    const history = await Analysis.find()
-      .sort({ createdAt: -1 })
-      .limit(10)
-      .select('-resumeText');
-    res.json(history);
-  } catch (err) {
     res.status(500).json({ error: err.message });
   }
 });
