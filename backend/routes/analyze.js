@@ -84,18 +84,28 @@ router.post('/', upload.single('resume'), async (req, res) => {
       return res.status(500).json({ error: 'AI returned invalid format. Try again.' });
     }
 
-    // Save to MongoDB
-    const saved = await Analysis.create({
-      resumeText,
-      jobDescription,
-      matchScore: analysis.matchScore,
-      summary: analysis.summary,
-      strengths: analysis.strengths,
-      missing: analysis.missing,
-      improved_bullet: analysis.improved_bullet
-    });
-
-    res.status(201).json(saved);
+    // Try to save to MongoDB, but return result even if it fails
+    try {
+      const saved = await Analysis.create({
+        resumeText,
+        jobDescription,
+        matchScore: analysis.matchScore,
+        summary: analysis.summary,
+        strengths: analysis.strengths,
+        missing: analysis.missing,
+        improved_bullet: analysis.improved_bullet
+      });
+      return res.status(201).json(saved);
+    } catch (dbError) {
+      console.error('DB save failed, returning result anyway:', dbError.message);
+      return res.status(201).json({
+        matchScore: analysis.matchScore,
+        summary: analysis.summary,
+        strengths: analysis.strengths,
+        missing: analysis.missing,
+        improved_bullet: analysis.improved_bullet
+      });
+    }
 
   } catch (err) {
     console.error(err);
