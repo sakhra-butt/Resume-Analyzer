@@ -8,7 +8,13 @@ dotenv.config();
 
 const app = express();
 
-app.use(cors());
+app.use(cors({
+  origin: [
+    'http://localhost:5173',
+    'https://resume-analyzer-production-0fa0.up.railway.app'
+  ]
+}));
+
 app.use(express.json());
 
 // Connect to MongoDB
