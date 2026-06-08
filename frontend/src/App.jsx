@@ -48,7 +48,13 @@ export default function App() {
       <main className="max-w-3xl mx-auto px-4 py-6">
         {activeTab === 'analyze' ? (
           <div className="space-y-5">
-            <UploadForm onResult={(data) => setResult(data)} />
+            
+            <UploadForm onResult={(data) => {
+  setResult(data)
+  const existing = JSON.parse(localStorage.getItem('resumeHistory') || '[]')
+  const updated = [{ ...data, createdAt: new Date().toISOString() }, ...existing].slice(0, 10)
+  localStorage.setItem('resumeHistory', JSON.stringify(updated))
+}} />
             {result && <ResultCard result={result} />}
           </div>
         ) : (

@@ -1,18 +1,14 @@
-import { useEffect, useState } from 'react'
-import axios from 'axios'
-
-const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:5000'
+import { useState, useEffect } from 'react'
 
 export default function HistoryList() {
   const [history, setHistory] = useState([])
-  const [loading, setLoading] = useState(true)
   const [selected, setSelected] = useState(null)
 
   useEffect(() => {
-    axios.get(`${API_URL}/api/analyze/history`)
-      .then(res => setHistory(res.data))
-      .catch(err => console.error(err))
-      .finally(() => setLoading(false))
+    const saved = localStorage.getItem('resumeHistory')
+    if (saved) {
+      setHistory(JSON.parse(saved))
+    }
   }, [])
 
   const scoreColor = (score) =>
@@ -20,12 +16,9 @@ export default function HistoryList() {
     score >= 50 ? 'text-yellow-600 bg-yellow-50' :
     'text-red-500 bg-red-50'
 
-  if (loading) {
-    return (
-      <div className="text-center py-16 text-gray-400 text-sm">
-        Loading history...
-      </div>
-    )
+  const clearHistory = () => {
+    localStorage.removeItem('resumeHistory')
+    setHistory([])
   }
 
   if (history.length === 0) {
@@ -39,15 +32,22 @@ export default function HistoryList() {
 
   return (
     <div className="space-y-4">
-      <h2 className="text-lg font-semibold text-gray-900">Past Analyses</h2>
-
-      {history.map((item) => (
-        <div
-          key={item._id}
-          className="bg-white rounded-2xl border border-gray-200 p-5 cursor-pointer hover:border-blue-300 transition-colors"
-          onClick={() => setSelected(selected?._id === item._id ? null : item)}
+      <div className="flex items-center justify-between">
+        <h2 className="text-lg font-semibold text-gray-900">Past Analyses</h2>
+        <button
+          onClick={clearHistory}
+          className="text-xs text-red-400 hover:text-red-500"
         >
-          {/* Row */}
+          Clear all
+        </button>
+      </div>
+
+      {history.map((item, index) => (
+        <div
+          key={index}
+          className="bg-white rounded-2xl border border-gray-200 p-4 sm:p-5 cursor-pointer hover:border-blue-300 transition-colors"
+          onClick={() => setSelected(selected === index ? null : index)}
+        >
           <div className="flex items-center justify-between">
             <div className="flex-1 min-w-0">
               <p className="text-sm text-gray-700 truncate pr-4">
@@ -65,8 +65,7 @@ export default function HistoryList() {
             </div>
           </div>
 
-          {/* Expanded Detail */}
-          {selected?._id === item._id && (
+          {selected === index && (
             <div className="mt-4 pt-4 border-t border-gray-100 space-y-3">
               <p className="text-sm text-gray-600 leading-relaxed">{item.summary}</p>
 
