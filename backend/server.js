@@ -11,7 +11,8 @@ const app = express();
 app.use(cors({
   origin: [
     'http://localhost:5173',
-    'https://resume-analyzer-production-0fa0.up.railway.app'
+    'https://resume-analyzer-production-0fa0.up.railway.app',
+    'https://resume-analyzer-lilac-eta.vercel.app'
   ]
 }));
 
